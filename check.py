@@ -216,6 +216,9 @@ class EmailChecker:
             0.005: "运气不错，邮箱质量一般",
             0.01: "运气太好了吧，邮箱质量很好"
         }
+        if len(self.mailboxes) == 0:
+            log_message("No mailboxes to check.", color=Fore.LIGHTRED_EX)
+            return
         ratio = self.edu_count / len(self.mailboxes)
         tips = next((tips for threshold, tips in tips_dict.items() if ratio < threshold), tips_dict[1.0])
         stats_message = f"检查了{len(self.mailboxes)}邮箱\n" \
