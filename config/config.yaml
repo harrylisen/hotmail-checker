@@ -1,0 +1,13 @@
+checker:
+  email_dir: emails
+  proxies_dir: config/proxies.txt
+  dead_emails_dir: out/dead.txt
+  live_emails_dir: out/live.txt
+  save_emails_dir: out/mail/
+  edu_emails_dir: out/edu.txt
+  log_level: 3
+  max_workers: 40
+
+push:
+  type: bark  # 可以是bark pushplus serverchan
+  token: xxxxxxxxxxxx

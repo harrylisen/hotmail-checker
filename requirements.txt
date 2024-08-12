@@ -1,0 +1,7 @@
+colorama==0.4.6
+httpx==0.27.0
+python_dateutil==2.9.0.post0
+PyYAML==6.0.2
+PyYAML==6.0.2
+Requests==2.32.3
+sockslib==1.7.6

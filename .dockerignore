@@ -1,0 +1,28 @@
+# Ignore all files in emails directory
+emails/*
+# Ignore .git directory
+.git
+.IDEA
+.idea/
+# Ignore all log files
+*.log
+
+# Ignore all .pyc files
+*.pyc
+
+# Ignore all .pyo files
+*.pyo
+
+# Ignore all .pyd files
+*.pyd
+
+# Ignore __pycache__ directories
+__pycache__
+
+# Ignore test directory
+test/
+
+# Ignore all .csv files
+*.csv
+.DS_Store
+/out/mail/*
