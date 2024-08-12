@@ -38,6 +38,8 @@ class hotmails:
             if os.path.isfile(filepath):
                 with open(filepath, 'r') as file:
                     for line in file:
+                        if len(line.strip()) == 0 and len(line) > 50:
+                            continue
                         total_count += 1
                         item = line.strip()
                         if item in dead_emails:
