@@ -3,7 +3,6 @@ import yaml
 from colorama import Fore
 from utils import load_file, is_valid_email, log_message
 
-
 with open("config/config.yaml", 'r') as file:
     config = yaml.safe_load(file)
 
@@ -20,7 +19,8 @@ class hotmails:
 
     @staticmethod
     def format_validation(data):
-        return data.split(":")[0] + ':' + data.split(":")[1].split(" |")[0]
+        data = (data.split(":")[0] + ':' + data.split(":")[1].split("|")[0]).strip()
+        return data
 
     def load_emails(self):
         total_count = 0
