@@ -211,11 +211,19 @@ class EmailChecker:
 
     def collect_and_send_stats(self):
         # 检查了xx邮箱 有xx个活着的邮箱 有xx个死掉的邮箱 有xx个edu邮箱 检索了xx 封邮件 用时xx分钟
-        stats_message = f"检查了{self.email_count}邮箱\n" \
-                        f"{self.live_count}live {self.dead_count}dead \n" \
-                        f"有{self.edu_count}个edu邮箱 \n" \
+        tips_dict = {
+            0.001: "运气太差，邮箱质量太差",
+            0.005: "运气不错，邮箱质量一般",
+            0.01: "运气太好了吧，邮箱质量很好"
+        }
+        ratio = self.edu_count / len(self.mailboxes)
+        tips = next((tips for threshold, tips in tips_dict.items() if ratio < threshold), tips_dict[1.0])
+        stats_message = f"检查了{len(self.mailboxes)}邮箱\n" \
+                        f"{self.live_count} live {self.dead_count} dead \n" \
+                        f"有{self.edu_count} 个edu邮箱 \n" \
                         f"检索了{self.email_count}封邮件 \n" \
-                        f"用时{(datetime.now() - self.start_time).total_seconds()}秒"
+                        f"用时{(datetime.now() - self.start_time).total_seconds() / 60} min\n" \
+                        f"{tips}"
         log_message(stats_message, color=Fore.LIGHTYELLOW_EX)
         push = Push()
         push.send_message("hotmail-checker ", stats_message)
