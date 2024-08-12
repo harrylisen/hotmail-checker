@@ -17,8 +17,10 @@ def load_file(file_path):
 
 def is_valid_email(item):
     # 简单的电子邮件格式检查，可以根据需要进行扩展 检查是否是 xx@xx.com:xx
-    if ':' not in item:
-        return
+    if 'http' in item or 'www' in item:
+        return False
+    if ':' not in item or '@' not in item:
+        return False
     if '@' in item and ':' in item.split('@')[1]:
         email_address = item.split('@')[1].split(':')[0].strip()
         microsoft_domains = ['outlook.com', 'hotmail.com', 'live.com', 'msn.com', 'microsoft.com']
