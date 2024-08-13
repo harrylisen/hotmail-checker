@@ -5,7 +5,7 @@ from hotmail import hotmails
 import random
 import email
 import socket
-import sockslib
+import socks
 from datetime import datetime
 from zpush import Push
 from utils import log_message
@@ -87,22 +87,18 @@ class EmailChecker:
 
     def check_login(self, email_address, email_password):
         try:
-            # imap_server = "outlook.office365.com"
-            # imap_port = 993
-            imap_server = "imap-mail.outlook.com"
+            imap_server = "outlook.office365.com"
+            imap_port = 993
+            # imap_server = "imap-mail.outlook.com"
             socket.setdefaulttimeout(30)
             if self.proxy:
                 address, port, username, password = self.get_random_proxy()
                 if username == 1 and password == 1:
-                    sockslib.set_default_proxy((address, port), sockslib.Socks.SOCKS5, socket.AF_INET)
+                    socks.set_default_proxy(socks.SOCKS5, address, port)
                 else:
-                    auth_methods = [
-                        sockslib.UserPassAuth(username,
-                                              password),
-                    ]
-                    sockslib.set_default_proxy((address, port), sockslib.Socks.SOCKS5, socket.AF_INET, auth_methods)
-                socket.socket = sockslib.SocksSocket
-            mail = imaplib.IMAP4_SSL(imap_server)
+                    socks.set_default_proxy(socks.SOCKS5, address, port, username=username, password=password)
+                socks.wrapmodule(imaplib)
+            mail = imaplib.IMAP4_SSL(imap_server, imap_port)
             mail.login(email_address, email_password)
             return mail, None
         except imaplib.IMAP4.error as e:
