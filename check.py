@@ -197,7 +197,7 @@ class EmailChecker:
             log_message("No mailboxes to check.", color=Fore.LIGHTRED_EX)
             return
         ratio = self.edu_count / len(self.mailboxes)
-        tips = next((tips for threshold, tips in tips_dict.items() if ratio < threshold), tips_dict[1.0])
+        tips = next((tips for threshold, tips in tips_dict.items() if ratio < threshold), tips_dict[0.01])
         stats_message = f"检查了{len(self.mailboxes)}邮箱\n" \
                         f"{self.live_count} live {self.dead_count} dead \n" \
                         f"有{self.edu_count} 个edu邮箱 \n" \
