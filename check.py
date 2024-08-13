@@ -114,11 +114,7 @@ class EmailChecker:
         start_time = datetime.now()
         mail_count = 0
         try:
-            log_message(f"{email_address} : {password} -> EDU Email Login", color=Fore.LIGHTBLUE_EX,
-                        enable=int(log_level) - 1)
-
             mail.select('INBOX')
-
             start_date = datetime(2014, 1, 1)
             end_date = datetime(2024, 1, 1)
 
