@@ -6,7 +6,7 @@ from datetime import datetime
 def load_file(file_path):
     try:
         with open(file_path, 'r') as file:
-            return {line.strip() for line in file}
+            return {line.strip() for line in file if line.strip()}
     except FileNotFoundError:
         # 如果文件不存在，创建文件夹（如果需要）并创建空文件
         os.makedirs(os.path.dirname(file_path), exist_ok=True)

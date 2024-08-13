@@ -1,5 +1,4 @@
 import os
-import smtplib
 import imaplib
 import yaml
 from hotmail import hotmails
@@ -43,7 +42,7 @@ class EmailChecker:
     def load_file(file_path):
         try:
             with open(file_path, 'r') as file:
-                return {line.strip() for line in file}
+                return {line.strip() for line in file if line.strip()}
         except FileNotFoundError:
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, 'w') as file:
@@ -56,14 +55,12 @@ class EmailChecker:
             file.write(f'{email_address} : {password} -> {from_address}\n')
 
     def load_proxies(self):
-        self.proxies = self.load_file(proxies_dir)
-
-        if self.proxies:
-            print(self.proxy)
-            log_message(f"Loaded {len(self.proxies)} proxies from proxies.txt", color=Fore.LIGHTBLUE_EX)
-        else:
+        if not self.load_file(proxies_dir):
             log_message("No proxies found in proxies.txt", color=Fore.RED)
-            self.proxy = False
+            return
+        self.proxies = list(self.load_file(proxies_dir))
+        self.proxy = True
+        log_message(f"Loaded {len(self.proxies)} proxies from proxies.txt", color=Fore.LIGHTBLUE_EX)
 
     @staticmethod
     def save_email_content(email_address, from_address, email_message):
@@ -81,10 +78,11 @@ class EmailChecker:
         proxy_parts = random.choice(self.proxies).split(':')
         address = proxy_parts[0]
         port = int(proxy_parts[1])
-        # username = proxy_parts[2]
-        # password = proxy_parts[3]
         username = 1
         password = 1
+        if len(proxy_parts) > 3:
+            username = proxy_parts[2]
+            password = proxy_parts[3]
         return address, port, username, password
 
     def check_login(self, email_address, email_password):
@@ -95,11 +93,14 @@ class EmailChecker:
             socket.setdefaulttimeout(30)
             if self.proxy:
                 address, port, username, password = self.get_random_proxy()
-                auth_methods = [
-                    sockslib.UserPassAuth(username,
-                                          password),
-                ]
-                sockslib.set_default_proxy((address, port), sockslib.Socks.SOCKS5)
+                if username == 1 and password == 1:
+                    sockslib.set_default_proxy((address, port), sockslib.Socks.SOCKS5, socket.AF_INET)
+                else:
+                    auth_methods = [
+                        sockslib.UserPassAuth(username,
+                                              password),
+                    ]
+                    sockslib.set_default_proxy((address, port), sockslib.Socks.SOCKS5, socket.AF_INET, auth_methods)
                 socket.socket = sockslib.SocksSocket
             mail = imaplib.IMAP4_SSL(imap_server)
             mail.login(email_address, email_password)
