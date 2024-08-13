@@ -89,8 +89,9 @@ class EmailChecker:
 
     def check_login(self, email_address, email_password):
         try:
-            imap_server = "outlook.office365.com"
-            imap_port = 993
+            # imap_server = "outlook.office365.com"
+            # imap_port = 993
+            imap_server = "imap-mail.outlook.com"
             socket.setdefaulttimeout(30)
             if self.proxy:
                 address, port, username, password = self.get_random_proxy()
@@ -100,11 +101,11 @@ class EmailChecker:
                 ]
                 sockslib.set_default_proxy((address, port), sockslib.Socks.SOCKS5)
                 socket.socket = sockslib.SocksSocket
-            mail = imaplib.IMAP4_SSL(imap_server, imap_port)
+            mail = imaplib.IMAP4_SSL(imap_server)
             mail.login(email_address, email_password)
             return mail, None
-        except smtplib.SMTPAuthenticationError as e:
-            error_message = f"Authentication failed. {str(e)}"
+        except imaplib.IMAP4.error as e:
+            error_message = f" IMAP4.error {str(e)}"
             return None, error_message
         except Exception as e:
             error_message = f"{str(e)}"
