@@ -36,7 +36,7 @@ class hotmails:
         for filename in os.listdir(email_dir):
             filepath = os.path.join(email_dir, filename)
             if os.path.isfile(filepath):
-                with open(filepath, 'r') as file:
+                with open(filepath, 'r', errors='ignore') as file:
                     for line in file:
                         if len(line.strip()) == 0 and len(line) > 50:
                             continue

