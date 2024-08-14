@@ -4,4 +4,7 @@ python_dateutil==2.9.0.post0
 PyYAML==6.0.2
 PyYAML==6.0.2
 Requests==2.32.3
+SocksiPy_branch==1.1
+SocksiPy_branch==1.01
 sockslib==1.7.6
+sseclient==0.0.27
