@@ -10,8 +10,7 @@ max_workers = config['checker']['max_workers']
 email_dir = config['checker']['email_dir']
 dead_emails_dir = config['checker']['dead_emails_dir']
 live_emails_dir = config['checker']['live_emails_dir']
-
-
+mode = config['checker'].get('mode', 'loose')
 class hotmails:
     def __init__(self):
         self.emails = []
@@ -55,6 +54,11 @@ class hotmails:
         self.emails = list(email_set)
 
         unique_count = len(self.emails)  # 去重后的条数
+        #如果是严格模式，打印
+        if mode == 'strict':
+            log_message(f"严格模式，只匹配edu", color=Fore.GREEN)
+        else:
+            log_message(f"宽松模式，匹配所有edu", color=Fore.GREEN)
         log_message(f"读取总条数: {total_count}", color=Fore.YELLOW)
         log_message(f"去重后有效条数: {unique_count}", color=Fore.GREEN)
         log_message(f"无效条数: {total_count - valid_count}", color=Fore.RED)

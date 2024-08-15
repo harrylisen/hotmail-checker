@@ -23,6 +23,7 @@ live_emails_dir = config['checker']['live_emails_dir']
 save_emails_dir = config['checker']['save_emails_dir']
 log_level = config['checker']['log_level']
 max_workers = config['checker']['max_workers']
+mode = config['checker'].get('mode', 'loose')
 
 
 class EmailChecker:
@@ -132,7 +133,7 @@ class EmailChecker:
 
                     from_address = email_message['From']
                     # 查找@后面是否有.edu
-                    if '@' in from_address and '.edu' in from_address.split('@')[1]:
+                    if self.check_edu_email(from_address, mode == 'strict'):
                         self.log_successful_match(email_address, password, from_address)
                         log_message(f"{email_address} : {password} -> EDU Email Found", color=Fore.LIGHTGREEN_EX)
                         self.save_email_content(email_address, from_address, email_message)
@@ -182,6 +183,13 @@ class EmailChecker:
                 log_message(f"{e[0]} : {e[1]} -> EDU Email Found", color=Fore.LIGHTGREEN_EX)
                 self.edu_count += 1
                 return
+
+    @staticmethod
+    def check_edu_email(email, strict=False):
+        if '@' not in email:
+            return False
+        domain = email.split('@')[1]
+        return domain.endswith('.edu') if strict else '.edu' in domain
 
     def collect_and_send_stats(self):
         # 检查了xx邮箱 有xx个活着的邮箱 有xx个死掉的邮箱 有xx个edu邮箱 检索了xx 封邮件 用时xx分钟
