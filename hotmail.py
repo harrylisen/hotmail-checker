@@ -65,7 +65,6 @@ class Hotmail:
         # 添加所有live 邮箱到集合 重新去重 本地模式是逐条添加 所以没法w 只能r追加模式
         if run_mode != "local":
             email_set = set(live_emails)
-            print(len(email_set))
         for dirpath, dirnames, filenames in os.walk(my_email_path):
             for filename in filenames:
                 filepath = os.path.join(dirpath, filename)
