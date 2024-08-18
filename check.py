@@ -227,6 +227,7 @@ class EmailChecker:
 
     def run_with_tg(self, my_email_path):
         self.mailboxes = Hotmail().load_tg_mailboxes(my_email_path + '/new')
+        self.load_proxies()
         move_files(my_email_path + '/new', my_email_path + '/old')
         self.start_time = datetime.now()
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:

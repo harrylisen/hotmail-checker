@@ -21,6 +21,8 @@ api_hash = config['tg']['api_hash']
 phone = config['tg']['phone']
 channel_list = config['tg']['channel_list']
 save_path = config['tg']['save_path']
+my_channel = config['tg']['my_channel']
+forward_channel = config['tg']['forward_channel']
 
 
 class TGDown:
@@ -35,6 +37,9 @@ class TGDown:
             message = event.message
             log_message(f"Message: {message}", color=Fore.LIGHTBLUE_EX)
             if message.media is not None:
+                if my_channel is not None and forward_channel is not None and chat_id != my_channel:
+                    message.message = 'hotmail_share_by_rick'
+                    await self.client.send_message(entity=forward_channel, message=message)
                 await self.download_file(channel_title, chat_id, message)
             else:
                 content = f'From:{channel_title}\n{message.message}'
@@ -83,7 +88,7 @@ class TGDown:
 
     @staticmethod
     def check_file_name(file_name):
-        microsoft_domains = ['outlook', 'hotmail', 'live', 'microsoft']
+        microsoft_domains = ['outlook', 'hotmail', 'live', 'microsoft', 'us']
         black_domains = ['mix', 'gmail', 'yahoo', 'eu']
         only_name = ['quality', 'valid', 'private', 'good']
         if not file_name.endswith('.txt'):

@@ -5,7 +5,7 @@ checker:
   live_emails_dir: out/live.txt
   save_emails_dir: out/mail/
   edu_emails_dir: out/edu.txt
-  log_level: 1
+  log_level: 3
   max_workers: 40
   mode: strict # strict or loose
 
@@ -13,12 +13,15 @@ run_mode: tg # tg or local
 
 push:
   type: bark  # 可以是bark pushplus serverchan
-  token:
+  token: xxxx
 
 tg:
-  api_id:
-  api_hash:
-  phone:
+  api_id: xxxx
+  api_hash: xxxx
+  phone: +86xxxxxxx #手机号
   channel_list:
-    - https://t.me/xxxx
+    - https://t.me/xxx
   save_path: tg_emails
+  my_channel: xxx  #无需配置
+  forward_channel: xxxx #无需配置
+  check_interval: 3600 * 8
