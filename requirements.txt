@@ -7,6 +7,4 @@ PyYAML==6.0.2
 Requests==2.32.3
 SocksiPy_branch==1.1
 SocksiPy_branch==1.01
-sockslib==1.7.6
-sseclient==0.0.27
 Telethon==1.36.0
