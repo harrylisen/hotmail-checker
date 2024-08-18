@@ -38,8 +38,14 @@ class TGDown:
             log_message(f"Message: {message}", color=Fore.LIGHTBLUE_EX)
             if message.media is not None:
                 if my_channel is not None and forward_channel is not None and chat_id != my_channel:
-                    message.message = 'hotmail_share_by_rick'
-                    await self.client.send_message(entity=forward_channel, message=message)
+                    allow_domain = ['be', 'br', 'ca', 'ch', 'com', 'cz', 'de', 'es', 'eu', 'europe', 'fr', 'gmail',
+                                    'good', 'hotmail', 'it', 'jp', 'live', 'mix', 'microsoft', 'nl', 'ok', 'outlook',
+                                    'pl', 'private', 'pt', 'quality', 'uk', 'usa', 'us', 'valid', 'yahoo', 'ru', 'cn',
+                                    'in', 'china', 'india', 'united states']
+                    file_name = self.get_file_name(message).lower().strip()
+                    if any(domain in file_name for domain in allow_domain):
+                        message.message = '⬇️Fresh Lines Daily Update \n\n ✔️hotmail_share_by_rick'
+                        await self.client.send_message(entity=forward_channel, message=message)
                 await self.download_file(channel_title, chat_id, message)
             else:
                 content = f'From:{channel_title}\n{message.message}'
