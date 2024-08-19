@@ -37,7 +37,7 @@ class TGDown:
             message = event.message
             log_message(f"Message: {message}", color=Fore.LIGHTBLUE_EX)
             if message.media is not None:
-                if my_channel is not None and forward_channel is not None and chat_id != my_channel:
+                if my_channel is not None and forward_channel is not None and chat_id != my_channel and message.file and message.file.name:
                     allow_domain = ['be', 'br', 'ca', 'ch', 'com', 'cz', 'de', 'es', 'eu', 'europe', 'fr', 'gmail',
                                     'good', 'hotmail', 'it', 'jp', 'live', 'mix', 'microsoft', 'nl', 'ok', 'outlook',
                                     'pl', 'private', 'pt', 'quality', 'uk', 'usa', 'us', 'valid', 'yahoo', 'ru', 'cn',
@@ -49,9 +49,6 @@ class TGDown:
                         message.message = '✅Fresh Lines Daily Update \n\n🌩#mail_share 💥by_rick'
                         await self.client.send_message(entity=forward_channel, message=message)
                 await self.download_file(channel_title, chat_id, message)
-            else:
-                content = f'From:{channel_title}\n{message.message}'
-                await self.client.send_message(entity='me', message=content)
 
     async def get_chat_title(self, chat_id: int) -> Union[str, None]:
         if os.environ.get(str(chat_id)):
