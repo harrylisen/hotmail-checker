@@ -10,7 +10,7 @@ with open("config/config.yaml", 'r') as file:
     config = yaml.safe_load(file)
 
 run_mode = config.get('run_mode', 'local') == 'local' and 'local' or 'tg   '
-check_interval = config.get('check_interval', 3600 * 8)
+check_interval = config['tg'].get('check_interval', 3600 * 8)
 
 
 def animate_banner():
