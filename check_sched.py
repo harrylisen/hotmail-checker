@@ -14,7 +14,7 @@ live_emails_dir = config['checker']['live_emails_dir']
 
 
 class EmailCheckerSched:
-    def __init__(self, interval=3600 * 8):  # 默认间隔为1小时（3600秒）
+    def __init__(self, interval=28800):  # 默认间隔为1小时（3600秒）
         self.scheduler = sched.scheduler(time.time, time.sleep)
         self.interval = interval
 

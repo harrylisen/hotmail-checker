@@ -83,7 +83,7 @@ tg:
    save_path: tg_emails
    my_channel: xxx  # No need to configure
    forward_channel: xxxx # No need to configure
-   check_interval: 3600 * 8
+   check_interval: 28800
 ```
 
 ## 📂 Project Structure
