@@ -26,7 +26,7 @@ class EmailCheckerSched:
                 file.write(email_pwd + '\n')
         end_time = time.time()
         elapsed_time = end_time - start_time
-        next_interval = max(0, int(self.interval - elapsed_time))
+        next_interval = max(0, int(float(self.interval) - elapsed_time))
         self.scheduler.enter(next_interval, 1, self.run)
 
     def start_scheduler(self):
