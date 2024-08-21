@@ -104,7 +104,7 @@ class EmailChecker:
                         socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, address, port, username=username,
                                               password=password)
                         socket.socket = socks.socksocket
-                        log_message(f"Using proxy {address}:{port}", color=Fore.LIGHTBLUE_EX)
+                        log_message(f"Using proxy {address}:{port}", color=Fore.LIGHTBLUE_EX, enable=int(log_level) - 2)
                 mail = imaplib.IMAP4_SSL(imap_server, imap_port)
                 mail.login(email_address, email_password)
                 return mail, None
