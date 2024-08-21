@@ -8,7 +8,8 @@ checker:
   log_level: 3
   max_workers: 40
   mode: strict # strict or loose
-
+  search_terms:
+    - edu
 run_mode: tg # tg or local
 
 push:

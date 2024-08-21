@@ -26,6 +26,7 @@ save_emails_dir = config['checker']['save_emails_dir']
 log_level = config['checker']['log_level']
 max_workers = config['checker']['max_workers']
 mode = config['checker'].get('mode', 'loose')
+search_terms = config['checker'].get('search_terms', ['edu'])
 
 
 class EmailChecker:
@@ -124,9 +125,13 @@ class EmailChecker:
                     log_message(f"{email_address} : {password} -> Reached maximum check time.",
                                 color=Fore.LIGHTRED_EX)
                     break
-                search_criteria = f'(SEEN SENTSINCE "{start_date.strftime("%d-%b-%Y")}" SENTBEFORE "{(start_date + relativedelta(months=1)).strftime("%d-%b-%Y")}")'
-                _, message_numbers = mail.search(None, search_criteria)
-                mail_count += len(message_numbers[0].split())
+                all_results = []
+                for term in search_terms:
+                    search_criteria = f'(SEEN SENTSINCE "{start_date.strftime("%d-%b-%Y")}" SENTBEFORE "{(start_date + relativedelta(months=1)).strftime("%d-%b-%Y")}" OR FROM "{term}" OR BODY {term} ")'
+                    _, message_numbers = mail.search(None, search_criteria)
+                    all_results.extend(message_numbers[0].split())
+                all_results = list(set(all_results))  # 去除重复的结
+                mail_count += len(all_results)
 
                 for num in reversed(message_numbers[0].split()):
                     _, msg = mail.fetch(num, '(RFC822)')
