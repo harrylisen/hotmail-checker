@@ -167,7 +167,7 @@ class EmailChecker:
         if mail is None:
             with open(dead_emails_dir, 'a') as file:
                 file.write(email_pwd + '\n')
-            # log_message(f"{e[0]} : {e[1]} -> {message}", color=Fore.WHITE, enable=int(log_level) - 2)
+            log_message(f"{e[0]} : {e[1]} -> {message}", color=Fore.WHITE, enable=int(log_level) - 2)
             self.dead_count += 1
         else:
             self.live_count += 1
