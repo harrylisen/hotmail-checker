@@ -68,6 +68,7 @@ class Hotmail:
         for dirpath, dirnames, filenames in os.walk(my_email_path):
             for filename in filenames:
                 filepath = os.path.join(dirpath, filename)
+                file_count = valid_count
                 with open(filepath, 'r', errors='ignore') as file:
                     for line in file:
                         if len(line.strip()) == 0 and len(line) > 50:
@@ -83,6 +84,7 @@ class Hotmail:
                         if is_valid_email(item):
                             valid_count += 1
                             email_set.add(self.format_validation(item))
+                log_message(f"文件: {filename} 有效邮箱: {valid_count - file_count}", color=Fore.GREEN)
         mailboxes = list(email_set)
         return skipped_dead, skipped_live, total_count, valid_count, mailboxes
 
