@@ -9,7 +9,6 @@ from datetime import datetime
 import socks
 import yaml
 from colorama import Fore
-from dateutil.relativedelta import relativedelta
 
 from hotmail import Hotmail
 from utils import log_message, move_files
@@ -100,6 +99,7 @@ class EmailChecker:
                     address, port, username, password = self.get_random_proxy()
                     if username == 1 and password == 1:
                         socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, address, port)
+                        log_message(f"Using proxy {address}:{port}", color=Fore.LIGHTBLUE_EX, enable=int(log_level) - 2)
                     else:
                         socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, address, port, username=username,
                                               password=password)
@@ -109,7 +109,7 @@ class EmailChecker:
                 mail.login(email_address, email_password)
                 return mail, None
             except imaplib.IMAP4.error as e:
-                error_message = f" IMAP4.error {str(e)}"
+                error_message = f" IMAP4.error {str(e)} retry {retries + 1}"
                 retries += 1
                 if retries == max_retries:
                     return None, error_message
@@ -124,49 +124,32 @@ class EmailChecker:
         mail_count = 0
         try:
             mail.select('INBOX')
-            start_date = datetime(2014, 1, 1)
-            end_date = datetime(2024, 1, 1)
+            all_results = []
+            for term in search_terms:
+                search_criteria = f'(OR BODY "{term}" SUBJECT "{term}" SEEN)'
+                _, message_numbers = mail.search(None, search_criteria)
+                all_results.extend(message_numbers[0].split())
+            all_results = list(set(all_results))  # 去除重复的结果
 
-            while start_date <= end_date:
-                if (datetime.now() - start_time).total_seconds() > max_check_time:
-                    log_message(f"{email_address} : {password} -> Reached maximum check time.",
-                                color=Fore.LIGHTRED_EX)
-                    break
-                all_results = []
-                for term in search_terms:
-                    search_criteria = f'(SEEN SENTSINCE "{start_date.strftime("%d-%b-%Y")}" SENTBEFORE "{(start_date + relativedelta(months=1)).strftime("%d-%b-%Y")}" OR FROM "{term}" OR BODY {term} ")'
-                    _, message_numbers = mail.search(None, search_criteria)
-                    all_results.extend(message_numbers[0].split())
-                all_results = list(set(all_results))  # 去除重复的结
-                mail_count += len(all_results)
+            for num in all_results:
+                _, msg = mail.fetch(num, '(RFC822)')
+                email_body = msg[0][1]
+                email_message = email.message_from_bytes(email_body)
 
-                for num in reversed(message_numbers[0].split()):
-                    _, msg = mail.fetch(num, '(RFC822)')
-                    email_body = msg[0][1]
-                    email_message = email.message_from_bytes(email_body)
-
-                    from_address = email_message['From']
-                    # 查找@后面是否有.edu
-                    if self.check_edu_email(from_address, mode == 'strict'):
-                        self.log_successful_match(email_address, password, from_address)
-                        log_message(f"{email_address} : {password} -> EDU Email Found", color=Fore.LIGHTGREEN_EX)
-                        self.save_email_content(email_address, from_address, email_message)
-                        mail.close()
-                        mail.logout()
-                        log_message(
-                            f"{email_address} : {password} -> Checked {mail_count} emails in {(datetime.now() - start_time).total_seconds()} seconds. ",
-                            color=Fore.LIGHTRED_EX)
-                        return True
-
-                start_date = start_date + relativedelta(months=1)
-
-            mail.close()
-            mail.logout()
-            self.email_count += mail_count
-            log_message(
-                f"{email_address} : {password} -> Checked {mail_count} emails in {(datetime.now() - start_time).total_seconds()} seconds. No EDU email found.",
-                color=Fore.LIGHTRED_EX)
-            return False
+                from_address = email_message['From']
+                # 查找@后面是否有.edu
+                if self.check_edu_email(from_address, mode == 'strict'):
+                    self.log_successful_match(email_address, password, from_address)
+                    log_message(f"{email_address} : {password} -> EDU Email Found", color=Fore.LIGHTGREEN_EX)
+                    self.save_email_content(email_address, from_address, email_message)
+                    self.email_count += mail_count
+                    mail.close()
+                    mail.logout()
+                    log_message(
+                        f"{email_address} : {password} -> Checked {mail_count} emails in {(datetime.now() - start_time).total_seconds()} seconds. ",
+                        color=Fore.LIGHTRED_EX)
+                    return True
+                mail_count += 1
         except imaplib.IMAP4.error as e:
             self.email_count += mail_count
             log_message(f"{email_address} : {password} -> IMAP4.error {str(e)}", color=Fore.WHITE,
@@ -184,7 +167,7 @@ class EmailChecker:
         if mail is None:
             with open(dead_emails_dir, 'a') as file:
                 file.write(email_pwd + '\n')
-            log_message(f"{e[0]} : {e[1]} -> {message}", color=Fore.WHITE, enable=int(log_level) - 2)
+            # log_message(f"{e[0]} : {e[1]} -> {message}", color=Fore.WHITE, enable=int(log_level) - 2)
             self.dead_count += 1
         else:
             self.live_count += 1

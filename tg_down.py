@@ -115,7 +115,7 @@ class TGDown:
             if file_size < 1024:
                 log_message(f"File too small: {file_name}", color=Fore.LIGHTRED_EX)
                 return
-            if file_size > 1000 * 1024:
+            if file_size > 3000 * 1024:
                 log_message(f"File too large: {file_name}", color=Fore.LIGHTRED_EX)
                 return
             download_path = file_path + '.downloading'
