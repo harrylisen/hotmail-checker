@@ -89,28 +89,35 @@ class EmailChecker:
             password = proxy_parts[3]
         return address, port, username, password
 
-    def check_login(self, email_address, email_password):
-        try:
-            imap_server = "outlook.office365.com"
-            imap_port = 993
-            # imap_server = "imap-mail.outlook.com"
-            socket.setdefaulttimeout(30)
-            if self.proxy:
-                address, port, username, password = self.get_random_proxy()
-                if username == 1 and password == 1:
-                    socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, address, port)
-                else:
-                    socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, address, port, username=username, password=password)
-                    socket.socket = socks.socksocket
-            mail = imaplib.IMAP4_SSL(imap_server, imap_port)
-            mail.login(email_address, email_password)
-            return mail, None
-        except imaplib.IMAP4.error as e:
-            error_message = f" IMAP4.error {str(e)}"
-            return None, error_message
-        except Exception as e:
-            error_message = f"{str(e)}"
-            return None, error_message
+    def check_login(self, email_address, email_password, max_retries=3):
+        retries = 0
+        while retries < max_retries:
+            try:
+                imap_server = "outlook.office365.com"
+                imap_port = 993
+                socket.setdefaulttimeout(30)
+                if self.proxy:
+                    address, port, username, password = self.get_random_proxy()
+                    if username == 1 and password == 1:
+                        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, address, port)
+                    else:
+                        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, address, port, username=username,
+                                              password=password)
+                        socket.socket = socks.socksocket
+                        log_message(f"Using proxy {address}:{port}", color=Fore.LIGHTBLUE_EX)
+                mail = imaplib.IMAP4_SSL(imap_server, imap_port)
+                mail.login(email_address, email_password)
+                return mail, None
+            except imaplib.IMAP4.error as e:
+                error_message = f" IMAP4.error {str(e)}"
+                retries += 1
+                if retries == max_retries:
+                    return None, error_message
+            except Exception as e:
+                error_message = f"{str(e)}"
+                retries += 1
+                if retries == max_retries:
+                    return None, error_message
 
     def check_edu_mailbox(self, email_address, password, mail, max_check_time):
         start_time = datetime.now()
