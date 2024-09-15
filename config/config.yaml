@@ -7,7 +7,7 @@ checker:
   edu_emails_dir: out/edu.txt
   log_level: 3
   max_workers: 40
-  mode: strict # strict or loose
+  mode: loose # strict or loose
   search_terms:
     - edu
 run_mode: tg # tg or local
@@ -17,12 +17,12 @@ push:
   token: xxxx
 
 tg:
-  api_id: xxxx
-  api_hash: xxxx
-  phone: +86xxxxxxx #手机号
+  api_id: 7286957268
+  api_hash: AAE4ZcMO1xc7pEx20-8GWgWdocRfGU8eHRQ
+  phone: +8613278858710 #手机号
   channel_list:
-    - https://t.me/xxx
+    - https://t.me/hotmailshare
   save_path: tg_emails
   my_channel: xxx  #无需配置
-  forward_channel: xxxx #无需配置
+  forward_channel: https://t.me/lisenmail #无需配置
   check_interval: 28800
