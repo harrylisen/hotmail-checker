@@ -2,6 +2,7 @@ import os
 import re
 import sys
 from asyncio import CancelledError
+from datetime import datetime, timedelta
 from typing import Union
 
 import demoji
@@ -28,6 +29,10 @@ forward_channel = config['tg']['forward_channel']
 class TGDown:
     def __init__(self):
         self.client = None
+        self.forward_count_1min = 0
+        self.forward_count_day = 0
+        self.last_reset_1min = datetime.now()
+        self.last_reset_day = datetime.now()
 
     async def start_monit(self):
         @self.client.on(events.NewMessage(chats=tuple(channel_list)))
@@ -37,17 +42,32 @@ class TGDown:
             message = event.message
             log_message(f"Message: {message}", color=Fore.LIGHTBLUE_EX)
             if message.media is not None:
-                if my_channel is not None and forward_channel is not None and chat_id != my_channel and message.file and message.file.name:
+                if my_channel is not None and forward_channel is not None and chat_id != my_channel and message.file and message.file.size < 10000 * 1024 and message.file.name:
                     allow_domain = ['be', 'br', 'ca', 'ch', 'com', 'cz', 'de', 'es', 'eu', 'europe', 'fr', 'gmail',
-                                    'good', 'hotmail', 'it', 'jp', 'live', 'mix', 'microsoft', 'nl', 'ok', 'outlook',
-                                    'pl', 'private', 'pt', 'quality', 'uk', 'usa', 'us', 'valid', 'yahoo', 'ru', 'cn',
+                                    'good', 'hotmail', 'it', 'jp', 'live', 'mix', 'microsoft', 'nl', 'ok',
+                                    'outlook',
+                                    'pl', 'private', 'pt', 'quality', 'uk', 'usa', 'us', 'valid', 'yahoo', 'ru',
+                                    'cn',
                                     'in', 'china', 'india', 'united states']
                     black_domain = ['@', 'http', 'channel', 't.me']
                     file_name = self.get_file_name(message).lower().strip()
-                    if file_name.endswith('.txt') and any(domain in file_name for domain in allow_domain) and not any(
-                            domain in file_name for domain in black_domain):
-                        message.message = '✅Fresh Lines Daily Update \n\n🌩#mail_share 💥by_rick'
-                        await self.client.send_message(entity=forward_channel, message=message)
+                    if file_name.endswith('.txt') and any(
+                            domain in file_name for domain in allow_domain) and not any(
+                        domain in file_name for domain in black_domain):
+                        if datetime.now() - self.last_reset_1min > timedelta(minutes=1):
+                            self.forward_count_1min = 0
+                            self.last_reset_1min = datetime.now()
+
+                        if datetime.now() - self.last_reset_day > timedelta(days=1):
+                            self.forward_count_day = 0
+                            self.last_reset_day = datetime.now()
+
+                        # Check limits
+                        if self.forward_count_1min < 2 and self.forward_count_day < 30:
+                            message.message = '✅Fresh Lines Daily Update \n\n🌩#mail_share 💥by_rick'
+                            await self.client.send_message(entity=forward_channel, message=message)
+                            self.forward_count_1min += 1
+                            self.forward_count_day += 1
                 await self.download_file(channel_title, chat_id, message)
 
     async def get_chat_title(self, chat_id: int) -> Union[str, None]:
