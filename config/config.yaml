@@ -17,9 +17,9 @@ push:
   token: xxxx
 
 tg:
-  api_id: 7286957268
-  api_hash: AAE4ZcMO1xc7pEx20-8GWgWdocRfGU8eHRQ
-  phone: +8613278858710 #手机号
+  api_id: 22729909
+  api_hash: b29d122f665d743d7e7a502925816775
+  phone: +8617386513907 #手机号
   channel_list:
     - https://t.me/hotmailshare
   save_path: tg_emails
